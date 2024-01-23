@@ -211,17 +211,21 @@ int main(int argc, char *argv[]) {
       int size = (scan.config.max_angle - scan.config.min_angle)/ scan.config.angle_increment + 1;
       scan_msg->ranges.resize(size);
       scan_msg->intensities.resize(size);
-
       pc_msg->channels.resize(2);
       int idx_intensity = 0;
       pc_msg->channels[idx_intensity].name = "intensities";
       int idx_timestamp = 1;
       pc_msg->channels[idx_timestamp].name = "stamps";
+      if(invalid_range_is_inf)
+      {
+        fill(scan_msg->ranges.begin(), scan_msg->ranges.end(), INFINITY);
+        fill(scan_msg->intensities.begin(), scan_msg->intensities.end(), INFINITY);
+      }
 
       for(size_t i=0; i < scan.points.size(); i++) {
         int index = std::ceil((scan.points[i].angle - scan.config.min_angle)/scan.config.angle_increment);
         if(index >=0 && index < size) {
-	  if (scan.points[i].range >= scan.config.min_range) {
+	  if (scan.points[i].range >= scan.config.min_range && scan.points[i].range <= scan.config.max_range) {
             scan_msg->ranges[index] = scan.points[i].range;
             scan_msg->intensities[index] = scan.points[i].intensity;
 	  }
